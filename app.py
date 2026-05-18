@@ -295,6 +295,44 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
 
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        {get_svg_icon("settings")}
+        <span style="font-weight:600; color:#1e293b; font-size:0.9rem;">Configuration</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    groq_key = st.text_input(
+        "Groq API Key",
+        type="password",
+        value=os.getenv("GROQ_API_KEY", ""),
+        placeholder="gsk_...",
+        help="Free key at console.groq.com"
+    )
+    gemini_key = st.text_input(
+        "Gemini API Key (optional)",
+        type="password",
+        value=os.getenv("GEMINI_API_KEY", ""),
+        placeholder="AIza...",
+        help="Free key at aistudio.google.com/apikey"
+    )
+    openai_key = st.text_input(
+        "OpenAI API Key (optional)",
+        type="password",
+        value=os.getenv("OPENAI_API_KEY", ""),
+        placeholder="sk-proj-...",
+        help="Paid — platform.openai.com"
+    )
+
+    if groq_key:
+        os.environ["GROQ_API_KEY"] = groq_key
+    if gemini_key:
+        os.environ["GEMINI_API_KEY"] = gemini_key
+    if openai_key:
+        os.environ["OPENAI_API_KEY"] = openai_key
+
+    st.markdown("---")
+
     # ── Past runs ─────────────────────────────────────────────────────────────
     st.markdown(f"""
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -696,56 +734,173 @@ with tab1:
 
 
 # ============================================================================
-# TAB 2 — PIPELINE INFO
+# TAB 2 — PIPELINE INFO  (professional redesign)
 # ============================================================================
 with tab2:
-    st.markdown("### How It Works")
+
+    # ── Section 1: Pipeline flow visual ──────────────────────────────────────
     st.markdown("""
-| # | Agent | Role | Technology |
-|---|-------|------|------------|
-| 1 | **Researcher** | Topic analysis, keyword research, outline | Groq LLM + SerpAPI |
-| 2 | **Writer** | Full blog draft creation | Groq Llama 3.3 |
-| 3 | **SEO Optimizer** | Meta tags, keywords, internal links | Groq LLM |
-| 4 | **Editor** | Quality scoring + feedback loop | Groq LLM |
-| 5 | **Chart Designer** | Data visualisation (matplotlib) | Python (free) |
-| 6 | **Publisher** | HTML assembly + PDF export | Native Python |
-""")
+<div style="background:linear-gradient(135deg,#1e293b,#334155);border-radius:14px;
+            padding:1.75rem 2rem;margin-bottom:1.5rem;">
+    <div style="font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:4px;">
+        How ContentFlow AI Works
+    </div>
+    <div style="color:#94a3b8;font-size:0.88rem;">
+        Six specialised agents collaborate in sequence to produce
+        publish-ready content from a single topic prompt.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # Agent pipeline cards
+    pipeline_steps = [
+        ("#3b82f6", "01", "Researcher",    "Analyses the topic, pulls search insights, identifies top keywords, and builds a structured content outline."),
+        ("#8b5cf6", "02", "Writer",         "Transforms the outline into a full, engaging HTML blog draft — tailored to the target audience and tone."),
+        ("#10b981", "03", "SEO Optimizer",  "Enriches the draft with a meta title, meta description, internal links, and optimal keyword placement."),
+        ("#f59e0b", "04", "Editor",         "Scores the draft 1–10 for quality, grammar, and brand voice. Sends it back to the Writer if it falls below your threshold."),
+        ("#ef4444", "05", "Chart Designer", "Generates relevant data visualisations using matplotlib — no external image APIs needed."),
+        ("#06b6d4", "06", "Publisher",      "Assembles the final styled HTML page and generates a print-ready PDF — ready to download instantly."),
+    ]
+
+    for i, (color, num, name, desc) in enumerate(pipeline_steps):
+        arrow = "↓" if i < len(pipeline_steps) - 1 else ""
+        st.markdown(f"""
+<div style="display:flex;align-items:flex-start;gap:1rem;
+            background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+            padding:1rem 1.25rem;margin-bottom:0.5rem;
+            border-left:4px solid {color};">
+    <div style="min-width:36px;height:36px;border-radius:50%;
+                background:{color}20;display:flex;align-items:center;
+                justify-content:center;font-weight:800;font-size:0.75rem;
+                color:{color};">{num}</div>
+    <div>
+        <div style="font-weight:700;font-size:0.92rem;color:#0f172a;">{name}</div>
+        <div style="font-size:0.8rem;color:#475569;margin-top:3px;line-height:1.5;">{desc}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+    # Feedback loop callout
+    st.markdown("""
+<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;
+            padding:0.875rem 1.25rem;margin:0.5rem 0 1.5rem;">
+    <span style="font-weight:700;color:#92400e;">🔁 Feedback Loop:</span>
+    <span style="color:#78350f;font-size:0.85rem;">
+     &nbsp;If the Editor scores below your quality threshold, the draft automatically
+     returns to the Writer for revision — up to your configured retry limit.
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 💰 Business Value Calculator")
-    articles_per_month = st.slider("Articles per month", 1, 50, 10)
-    manual_cost = articles_per_month * 8 * 40
-    ai_cost     = articles_per_month * 0.02
-    saved       = manual_cost - ai_cost
+
+    # ── Section 2: ROI Calculator ─────────────────────────────────────────────
+    st.markdown("""
+<div style="font-size:1.15rem;font-weight:700;color:white;margin-bottom:0.25rem;">
+    💰 ROI Calculator
+</div>
+<div style="font-size:0.83rem;color:#64748b;margin-bottom:1rem;">
+    See how much time and money ContentFlow AI saves your team every month.
+</div>
+""", unsafe_allow_html=True)
+
+    rc1, rc2 = st.columns(2)
+    with rc1:
+        articles_per_month = st.slider("Articles per month", 1, 50, 10)
+    with rc2:
+        hourly_rate = st.slider("Writer hourly rate ($)", 20, 150, 40)
+
+    manual_time  = articles_per_month * 8          # hours
+    manual_cost  = manual_time * hourly_rate
+    ai_cost      = articles_per_month * 0.02
+    saved        = manual_cost - ai_cost
+    time_saved_h = manual_time
+
+    m1, m2, m3, m4 = st.columns(4)
+    for col, val, label, color in [
+        (m1, f"{time_saved_h}h",        "Hours Saved",     "#3b82f6"),
+        (m2, f"${manual_cost:,.0f}",    "Manual Cost",     "#ef4444"),
+        (m3, f"${ai_cost:.2f}",         "AI Cost",         "#10b981"),
+        (m4, f"${saved:,.0f}",          "Net Savings",     "#8b5cf6"),
+    ]:
+        col.markdown(f"""
+<div style="background:{color}10;border:1px solid {color}30;border-radius:12px;
+            padding:1rem;text-align:center;">
+    <div style="font-size:1.6rem;font-weight:800;color:{color};">{val}</div>
+    <div style="font-size:0.7rem;color:#64748b;font-weight:500;
+                letter-spacing:0.5px;margin-top:3px;">{label.upper()}</div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    saving_pct = int((saved / manual_cost) * 100) if manual_cost > 0 else 0
     st.markdown(f"""
-| Metric | Manual | ContentFlow AI |
-|--------|--------|----------------|
-| Time per article | 8 hours | ~3 minutes |
-| Cost per article | $320 | ~$0.02 |
-| **Monthly ({articles_per_month} articles)** | **${manual_cost:,.0f}** | **${ai_cost:.2f}** |
-| **Monthly savings** | — | **${saved:,.0f}** |
-""")
-    st.success(f"💰 You save **${saved:,.0f} per month** with ContentFlow AI!")
+<div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;
+            padding:1rem 1.5rem;color:#fff;text-align:center;">
+    <span style="font-size:1.1rem;font-weight:700;">
+        🎉 With {articles_per_month} articles/month you save
+        <span style="font-size:1.4rem;">&nbsp;${saved:,.0f}&nbsp;</span>
+        and <span style="font-size:1.4rem;">{saving_pct}%</span> of writing time
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 🗄 Database Schema")
-    st.code("""
-pipeline_runs    → id, topic, status, timestamps, final_content, metadata
-agent_logs       → id, run_id, agent_name, status, input_data, output_data
-content_versions → id, run_id, version, agent_name, content
-""", language="sql")
 
-    st.markdown("---")
-    st.markdown("### ✅ Requirements Fulfilled")
+    # ── Section 3: Tech Stack ─────────────────────────────────────────────────
     st.markdown("""
-| Requirement | Implementation |
-|-------------|----------------|
-| LLM Integration | Groq (Llama 3.3 70B) / Gemini / OpenAI |
-| SQLite Database | 3 tables with full run logging |
-| External APIs | SerpAPI + optional WordPress REST API |
-| 6 Agents | Complete multi-agent pipeline |
-| Feedback Loop | Editor → Writer with configurable retries |
-| Real-time UI | Live agent status cards + progress bar |
-| Downloads | HTML ✓ · Plain Text ✓ · PDF ✓ |
-| Deployable | Streamlit Cloud ready |
-""")
+<div style="font-size:1.15rem;font-weight:700;color:white;margin-bottom:1rem;">
+    🛠️ Tech Stack
+</div>
+""", unsafe_allow_html=True)
+
+    ts1, ts2, ts3 = st.columns(3)
+    tech_groups = [
+        ("🤖 AI / LLM", "#8b5cf6", ["Groq — Llama 3.3 70B (free)", "Google Gemini 2.0 Flash (free)", "OpenAI GPT-4o (optional)"]),
+        ("🔗 APIs", "#3b82f6", ["SerpAPI — keyword research", "Unsplash — stock images", "WordPress REST — publishing"]),
+        ("🧱 Infrastructure", "#10b981", ["Streamlit — UI framework", "SQLite — run database", "Python ReportLab — PDF"]),
+    ]
+    for col, (title, color, items) in zip([ts1, ts2, ts3], tech_groups):
+        items_html = "".join(
+            f'<div style="display:flex;align-items:center;gap:6px;'
+            f'padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:0.8rem;color:#334155;">'
+            f'<span style="color:{color};">▸</span>{item}</div>'
+            for item in items
+        )
+        col.markdown(f"""
+<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+            padding:1rem;height:100%;">
+    <div style="font-weight:700;font-size:0.88rem;color:#0f172a;
+                margin-bottom:0.75rem;padding-bottom:0.5rem;
+                border-bottom:2px solid {color};">{title}</div>
+    {items_html}
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ── Section 4: Quick Start Tips ───────────────────────────────────────────
+    st.markdown("""
+<div style="font-size:1.15rem;font-weight:700;color:white;margin-bottom:1rem;">
+    💡 Tips for Best Results
+</div>
+""", unsafe_allow_html=True)
+
+    tips = [
+        ("🎯", "Be specific with your topic", "Instead of 'AI', try 'How AI is reducing costs in logistics for SMEs in 2025'"),
+        ("🔁", "Use the retry slider", "Set Editor Retry to 2–3 and Quality Threshold to 7+ for the best output quality"),
+        ("📥", "Download all three formats", "HTML for web publishing, Draft for editing in Word, PDF for client presentations"),
+        ("🔑", "Groq is fastest", "Use your free Groq key for the fastest pipeline runs — Llama 3.3 70B is excellent for content"),
+    ]
+    tip_c1, tip_c2 = st.columns(2)
+    for i, (icon, title, body) in enumerate(tips):
+        col = tip_c1 if i % 2 == 0 else tip_c2
+        col.markdown(f"""
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;
+            padding:0.875rem 1rem;margin-bottom:0.75rem;">
+    <div style="font-size:1.2rem;margin-bottom:4px;">{icon}
+        <span style="font-weight:700;font-size:0.88rem;color:#0f172a;">&nbsp;{title}</span>
+    </div>
+    <div style="font-size:0.78rem;color:#475569;line-height:1.5;">{body}</div>
+</div>
+""", unsafe_allow_html=True)

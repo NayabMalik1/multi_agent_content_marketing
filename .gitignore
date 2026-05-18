@@ -1,0 +1,36 @@
+# History folders (VS Code local history)
+.history/
+.lh/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+*.env
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+/tmp/
+*.tmp
+output/
+
+# Streamlit secrets
+.streamlit/secrets.toml
